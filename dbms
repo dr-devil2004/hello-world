@@ -1,0 +1,269 @@
+TASK-2-- BOOK
+ CREATE TABLE BOOK (
+    Book_id INT PRIMARY KEY,
+    Title VARCHAR(100) NOT NULL,
+    Publisher_Name VARCHAR(100),
+    Pub_Year YEAR
+ );-- BOOK_AUTHORS
+ CREATE TABLE BOOK_AUTHORS (
+    Book_id INT,
+    Author_Name VARCHAR(100),
+    PRIMARY KEY (Book_id, Author_Name),
+    FOREIGN KEY (Book_id) REFERENCES BOOK(Book_id) ON DELETE CASCADE
+ );-- PUBLISHER
+ CREATE TABLE PUBLISHER (
+    Name VARCHAR(100) PRIMARY KEY,
+    Address VARCHAR(200),
+    Phone VARCHAR(15)
+ );-- BOOK_COPIES
+ CREATE TABLE BOOK_COPIES (
+    Book_id INT,
+    Branch_id INT,
+    No_of_Copies INT CHECK (No_of_Copies >= 0),
+    PRIMARY KEY (Book_id, Branch_id),
+    FOREIGN KEY (Book_id) REFERENCES BOOK(Book_id) ON DELETE CASCADE
+ );-- LIBRARY_BRANCH
+ CREATE TABLE LIBRARY_BRANCH (
+    Branch_id INT PRIMARY KEY,
+    Branch_Name VARCHAR(100),
+    Address VARCHAR(200)
+ );-- BOOK_LENDING
+ CREATE TABLE BOOK_LENDING (
+    Book_id INT,
+    Br_id INT,
+    Card_No INT,
+    Date_Out DATE,
+    Due_Date DATE,
+    PRIMARY KEY (Book_id, Br_id, Card_No),
+    FOREIGN KEY (Book_id) REFERENCES BOOK(Book_id) ON DELETE CASCADE,
+    FOREIGN KEY (Br_id) REFERENCES LIBRARY_BRANCH(Branch_id)
+ );-- BOOK
+ INSERT INTO BOOK VALUES
+ (1, 'Database Systems', 'Pearson', 2019),
+ (2, 'Operating Systems', 'McGraw Hill', 2018),
+ (3, 'Data Structures', 'O\'Reilly', 2020),
+ (4, 'Computer Networks', 'Pearson', 2021),
+ (5, 'Algorithms', 'Springer', 2022);-- BOOK_AUTHORS
+
+INSERT INTO BOOK_AUTHORS VALUES
+ (1, 'Elmasri'),
+ (2, 'Silberschatz'),
+ (3, 'Sahni'),
+ (4, 'Tanenbaum'),
+ (5, 'Cormen');-- PUBLISHER
+ INSERT INTO PUBLISHER VALUES
+ ('Pearson', 'New York', '1234567890'),
+ ('McGraw Hill', 'Boston', '2345678901'),
+ ('O\'Reilly', 'San Francisco', '3456789012'),
+ ('Springer', 'Berlin', '4567890123'),
+ ('Wiley', 'London', '5678901234');-- LIBRARY_BRANCH
+ INSERT INTO LIBRARY_BRANCH VALUES
+ (101, 'Central', 'City Center'),
+ (102, 'West End', 'Main Street'),
+ (103, 'North Point', 'Northern Avenue'),
+ (104, 'East Side', 'East Boulevard'),
+ (105, 'South Ridge', 'Southern Road');-- BOOK_COPIES
+ INSERT INTO BOOK_COPIES VALUES
+ (1, 101, 5),
+ (2, 102, 2),
+ (3, 103, 3),
+ (4, 104, 4),
+ (5, 105, 6);-- BOOK_LENDING
+ INSERT INTO BOOK_LENDING VALUES
+ (1, 101, 1001, '2020-01-15', '2020-02-15'),
+ (2, 102, 1002, '2020-03-10', '2020-04-10'),
+ (3, 103, 1001, '2021-05-20', '2021-06-20'),
+ (4, 104, 1001, '2022-01-01', '2022-01-31'),
+ (5, 105, 1003, '2021-07-15', '2021-08-15'),
+ (2, 101, 1001, '2020-02-20', '2020-03-20');
+ 1) SELECT 
+    B.Book_id,
+    B.Title,
+    B.Publisher_Name,
+    P.Address AS Publisher_Address,
+    P.Phone AS Publisher_Phone,
+    A.Author_Name,
+    C.Branch_id,
+    L.Branch_Name,
+    C.No_of_Copies
+ FROM 
+    BOOK B
+ JOIN 
+    PUBLISHER P ON B.Publisher_Name = P.Name
+ JOIN 
+    BOOK_AUTHORS A ON B.Book_id = A.Book_id
+ JOIN 
+    BOOK_COPIES C ON B.Book_id = C.Book_id
+ JOIN 
+    LIBRARY_BRANCH L ON C.Branch_id = L.Branch_id;
+
+2) SELECT 
+    Card_No, COUNT(*) AS Total_Borrowed
+ FROM 
+    BOOK_LENDING
+ WHERE 
+    Date_Out BETWEEN '2020-01-01' AND '2022-06-30'
+ GROUP BY 
+    Card_No
+ HAVING 
+    COUNT(*) > 3;-- Deleting book will automatically delete from:-- BOOK_AUTHORS, BOOK_COPIES, BOOK_LENDING due to ON DELETE CASCADE
+ 3) DELETE FROM BOOK WHERE Book_id = 2;
+ TASK-3-- SALESMAN Table
+ CREATE TABLE SALESMAN (
+    Salesman_id INT PRIMARY KEY,
+    Name VARCHAR(100) NOT NULL,
+    City VARCHAR(100),
+    Commission DECIMAL(5,2)
+ );-- CUSTOMER Table
+ CREATE TABLE CUSTOMER (
+    C_id INT PRIMARY KEY,
+    Cust_Name VARCHAR(100),
+    City VARCHAR(100),
+    Grade INT,
+    Salesman_id INT,
+    FOREIGN KEY (Salesman_id) REFERENCES SALESMAN(Salesman_id)
+ );-- ORDERS Table
+ CREATE TABLE ORDERS (
+    Ord_No INT PRIMARY KEY,
+    Purchase_Amt DECIMAL(10,2),
+    Ord_Date DATE,
+    C_id INT,
+    S_id INT,
+    FOREIGN KEY (C_id) REFERENCES CUSTOMER(C_id),
+    FOREIGN KEY (S_id) REFERENCES SALESMAN(Salesman_id)
+ );-- SALESMAN
+ INSERT INTO SALESMAN VALUES
+ (5001, 'James', 'New York', 0.15),
+ (5002, 'Nina', 'London', 0.13),
+ (5003, 'Sam', 'Paris', 0.14),
+ (5004, 'John', 'Bangalore', 0.17),
+ (5005, 'Alice', 'Delhi', 0.12);-- CUSTOMER
+ INSERT INTO CUSTOMER VALUES
+ (3001, 'Nick', 'New York', 200, 5001),
+(3002, 'Priya', 'London', 100, 5002),
+ (3003, 'Ali', 'Bangalore', 150, 5004),
+ (3004, 'Sara', 'Paris', 250, 5003),
+ (3005, 'Aarav', 'Mumbai', 300, 5001);-- ORDERS
+ INSERT INTO ORDERS VALUES
+ (7001, 5000.00, '2023-01-10', 3001, 5001),
+ (7002, 7500.00, '2023-01-15', 3002, 5002),
+ (7003, 8200.00, '2023-01-17', 3003, 5004),
+ (7004, 15000.00, '2023-01-20', 3004, 5003),
+ (7005, 6200.00, '2023-01-22', 3005, 5001);
+ 1) SELECT COUNT(*) AS Customers_Above_Bangalore_Avg
+ FROM CUSTOMER
+ WHERE Grade > (
+    SELECT AVG(Grade)
+    FROM CUSTOMER
+    WHERE City = 'Bangalore'
+ );
+ 2) SELECT S.Name, COUNT(C.C_id) AS Num_Customers
+ FROM SALESMAN S
+ JOIN CUSTOMER C ON S.Salesman_id = C.Salesman_id
+ GROUP BY S.Salesman_id
+ HAVING COUNT(C.C_id) > 1;-- Salesmen with customers in their own city
+ 3) SELECT DISTINCT S.Name, 'Has Customer in City' AS Status
+ FROM SALESMAN S
+ JOIN CUSTOMER C ON S.Salesman_id = C.Salesman_id
+ WHERE S.City = C.City
+ UNION-- Salesmen without customers in their own city
+ SELECT S.Name, 'No Customer in City' AS Status
+ FROM SALESMAN S
+ WHERE S.Salesman_id NOT IN (
+    SELECT C.Salesman_id
+    FROM CUSTOMER C
+    WHERE S.City = C.City
+ );
+ 4) CREATE VIEW Top_Salesman_View AS
+ SELECT S.Salesman_id, S.Name, O.Purchase_Amt
+ FROM SALESMAN S
+ JOIN ORDERS O ON S.Salesman_id = O.S_id
+ WHERE O.Purchase_Amt = (
+    SELECT MAX(Purchase_Amt)
+    FROM ORDERS
+ );
+ SELECT * FROM Top_Salesman_View;
+ TASK-4-- EMPLOYEE Table
+ CREATE TABLE EMPLOYEE (
+ SSN INT PRIMARY KEY,
+    Name VARCHAR(100),
+    Address VARCHAR(255),
+    Sex CHAR(1),
+    Salary DECIMAL(10,2),
+    Super_SSN INT,
+    D_No INT
+ );-- DEPARTMENT Table
+ CREATE TABLE DEPARTMENT (
+    D_No INT PRIMARY KEY,
+    D_Name VARCHAR(100),
+    Mgr_SSN INT,
+    Mgr_Start_Date DATE,
+    FOREIGN KEY (Mgr_SSN) REFERENCES EMPLOYEE(SSN)
+ );-- DLOCATION Table
+ CREATE TABLE DLOCATION (
+    D_No INT,
+    D_Loc VARCHAR(100),
+    PRIMARY KEY (D_No, D_Loc),
+    FOREIGN KEY (D_No) REFERENCES DEPARTMENT(D_No)
+ );-- PROJECT Table
+ CREATE TABLE PROJECT (
+    P_No INT PRIMARY KEY,
+    P_Name VARCHAR(100),
+    P_Location VARCHAR(100),
+    D_No INT,
+    FOREIGN KEY (D_No) REFERENCES DEPARTMENT(D_No)
+ );-- WORKS_ON Table
+ CREATE TABLE WORKS_ON (
+    SSN INT,
+    P_No INT,
+    Hours DECIMAL(5,2),
+    PRIMARY KEY (SSN, P_No),
+    FOREIGN KEY (SSN) REFERENCES EMPLOYEE(SSN),
+    FOREIGN KEY (P_No) REFERENCES PROJECT(P_No)
+ );-- DEPARTMENT
+ INSERT INTO DEPARTMENT (D_No, D_Name, Mgr_SSN, Mgr_Start_Date)
+ VALUES 
+(1, 'Accounts', 1001, '2020-01-01'),
+ (2, 'Engineering', 1002, '2021-02-01');-- EMPLOYEE
+ INSERT INTO EMPLOYEE VALUES
+ (1001, 'Alice Smith', 'New York', 'F', 60000, NULL, 1),
+ (1002, 'Bob Scott', 'Boston', 'M', 75000, 1001, 2),
+ (1003, 'Carol White', 'Chicago', 'F', 50000, 1002, 2),
+ (1004, 'David Scott', 'Seattle', 'M', 55000, 1002, 1),
+ (1005, 'Eva Brown', 'Miami', 'F', 47000, 1003, 1);-- DLOCATION
+ INSERT INTO DLOCATION (D_No, D_Loc)VALUES 
+(1, 'New York'),
+ (2, 'Boston');-- PROJECT
+ INSERT INTO PROJECT VALUES
+ (10, 'IoT', 'New York', 2),
+ (11, 'AI', 'Boston', 2),
+ (12, 'HR Portal', 'Miami', 1);-- WORKS_ON
+ INSERT INTO WORKS_ON VALUES
+ (1002, 10, 20),
+ (1003, 10, 15),
+ (1004, 11, 25),
+ (1005, 12, 30);
+ 1) SELECT DISTINCT P.P_No
+ FROM PROJECT P
+ JOIN WORKS_ON W ON P.P_No = W.P_No
+ JOIN EMPLOYEE E ON W.SSN = E.SSN
+ WHERE E.Name LIKE '%Scott%'
+ UNION
+ SELECT DISTINCT P.P_No
+ FROM PROJECT P
+ JOIN DEPARTMENT D ON P.D_No = D.D_No
+ JOIN EMPLOYEE E ON D.Mgr_SSN = E.SSN
+ WHERE E.Name LIKE '%Scott%';
+ 2) SELECT E.Name, E.Salary, (E.Salary * 1.10) AS New_Salary
+ FROM EMPLOYEE E
+ JOIN WORKS_ON W ON E.SSN = W.SSN
+ JOIN PROJECT P ON W.P_No = P.P_No
+ WHERE P.P_Name = 'IoT';
+ 3) SELECT 
+    SUM(Salary) AS Total_Salary,
+    MAX(Salary) AS Max_Salary,
+    AVG(Salary) AS Avg_Salary
+ FROM EMPLOYEE
+ WHERE D_No = (
+    SELECT D_No FROM DEPARTMENT WHERE D_Name = 'Accounts'
+
